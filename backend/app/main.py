@@ -1,0 +1,8 @@
+docker-compose.yml
+backend/requirements.txt
+backend/Dockerfile
+backend/app/main.py
+docs/architecture.md
+docs/api-documentation.md
+docs/roadmap.md
+.env.example
