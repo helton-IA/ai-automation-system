@@ -131,3 +131,28 @@ def delete_task(task_id: int):
         "message": "Task deleted successfully",
         "task_id": task_id
     }
+@app.get("/automation/tasks/{task_id}")
+def get_task(task_id: int):
+
+    db: Session = SessionLocal()
+
+    task = db.query(Task).filter(Task.id == task_id).first()
+
+    if task is None:
+        db.close()
+
+        return {
+            "error": "Task not found"
+        }
+
+    result = {
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "priority": task.priority,
+        "status": task.status
+    }
+
+    db.close()
+
+    return result
