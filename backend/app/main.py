@@ -111,3 +111,23 @@ def update_task_status(task_id: int, status_update: TaskStatusUpdate):
             "status": task.status
         }
     }
+@app.delete("/automation/tasks/{task_id}")
+def delete_task(task_id: int):
+    db: Session = SessionLocal()
+
+    task = db.query(Task).filter(Task.id == task_id).first()
+
+    if task is None:
+        db.close()
+        return {
+            "error": "Task not found"
+        }
+
+    db.delete(task)
+    db.commit()
+    db.close()
+
+    return {
+        "message": "Task deleted successfully",
+        "task_id": task_id
+    }
