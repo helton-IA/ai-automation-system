@@ -1,3 +1,4 @@
+from enum import Enum
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -12,11 +13,17 @@ app = FastAPI(
     version="3.0.0"
 )
 
+class TaskStatus(str, Enum):
+    pending = "pending"
+    running = "running"
+    completed = "completed"
+    failed = "failed"
+
 class AutomationTask(BaseModel):
     title: str
     description: str
     priority: str = "medium"
-    status: str = "pending"
+    status: TaskStatus = TaskStatus.pending
 
 @app.get("/")
 def health_check():
@@ -78,7 +85,7 @@ def list_tasks():
     }
 
 class TaskStatusUpdate(BaseModel):
-    status: str
+    status: TaskStatus
 
 
 
