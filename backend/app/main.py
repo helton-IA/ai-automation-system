@@ -1,5 +1,5 @@
 from enum import Enum
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -25,6 +25,9 @@ class AutomationTask(BaseModel):
     priority: str = "medium"
     status: TaskStatus = TaskStatus.pending
 
+class TaskStatusUpdate(BaseModel):
+    status: TaskStatus
+
 @app.get("/")
 def health_check():
     return {
@@ -46,7 +49,6 @@ def create_task(task: AutomationTask):
     db.add(new_task)
     db.commit()
     db.refresh(new_task)
-
     db.close()
 
     return {
@@ -63,7 +65,6 @@ def create_task(task: AutomationTask):
 @app.get("/automation/tasks")
 def list_tasks():
     db: Session = SessionLocal()
-
     tasks = db.query(Task).all()
 
     result = []
@@ -84,73 +85,18 @@ def list_tasks():
         "tasks": result
     }
 
-class TaskStatusUpdate(BaseModel):
-    status: TaskStatus
-
-
-
-@app.put("/automation/tasks/{task_id}/status")
-def update_task_status(task_id: int, status_update: TaskStatusUpdate):
-    db: Session = SessionLocal()
-
-    task = db.query(Task).filter(Task.id == task_id).first()
-
-    if task is None:
-        db.close()
-        return {
-            "error": "Task not found"
-        }
-
-    task.status = status_update.status
-
-    db.commit()
-    db.refresh(task)
-
-    db.close()
-
-    return {
-        "message": "Task status updated successfully",
-        "task": {
-            "id": task.id,
-            "title": task.title,
-            "description": task.description,
-            "priority": task.priority,
-            "status": task.status
-        }
-    }
-@app.delete("/automation/tasks/{task_id}")
-def delete_task(task_id: int):
-    db: Session = SessionLocal()
-
-    task = db.query(Task).filter(Task.id == task_id).first()
-
-    if task is None:
-        db.close()
-        return {
-            "error": "Task not found"
-        }
-
-    db.delete(task)
-    db.commit()
-    db.close()
-
-    return {
-        "message": "Task deleted successfully",
-        "task_id": task_id
-    }
 @app.get("/automation/tasks/{task_id}")
 def get_task(task_id: int):
-
     db: Session = SessionLocal()
 
     task = db.query(Task).filter(Task.id == task_id).first()
 
     if task is None:
         db.close()
-
-        return {
-            "error": "Task not found"
-        }
+        raise HTTPException(
+            status_code=404,
+            detail="Task not found"
+        )
 
     result = {
         "id": task.id,
@@ -163,3 +109,55 @@ def get_task(task_id: int):
     db.close()
 
     return result
+
+@app.put("/automation/tasks/{task_id}/status")
+def update_task_status(task_id: int, status_update: TaskStatusUpdate):
+    db: Session = SessionLocal()
+
+    task = db.query(Task).filter(Task.id == task_id).first()
+
+    if task is None:
+        db.close()
+        raise HTTPException(
+            status_code=404,
+            detail="Task not found"
+        )
+
+    task.status = status_update.status
+
+    db.commit()
+    db.refresh(task)
+    db.close()
+
+    return {
+        "message": "Task status updated successfully",
+        "task": {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "priority": task.priority,
+            "status": task.status
+        }
+    }
+
+@app.delete("/automation/tasks/{task_id}")
+def delete_task(task_id: int):
+    db: Session = SessionLocal()
+
+    task = db.query(Task).filter(Task.id == task_id).first()
+
+    if task is None:
+        db.close()
+        raise HTTPException(
+            status_code=404,
+            detail="Task not found"
+        )
+
+    db.delete(task)
+    db.commit()
+    db.close()
+
+    return {
+        "message": "Task deleted successfully",
+        "task_id": task_id
+    }
