@@ -18,6 +18,8 @@ O sistema permite criar, listar e atualizar tarefas, mantendo os dados persistid
 * Swagger/OpenAPI
 * Git
 * GitHub
+- PostgreSQL-ready configuration
+- psycopg2-binary
 
 ## Funcionalidades
 
@@ -72,6 +74,17 @@ backend/
 ```
 
 ## Executando o Projeto
+
+## Configuração de Ambiente
+
+O projeto utiliza variáveis de ambiente para facilitar a troca entre bancos de dados.
+
+Exemplo de configuração SQLite:
+
+```env
+DATABASE_URL=sqlite:///./automation.db
+APP_NAME=AI Automation System
+APP_VERSION=3.1.0
 
 ### Instalar Dependências
 
