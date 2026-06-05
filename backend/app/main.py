@@ -5,12 +5,13 @@ from sqlalchemy.orm import Session
 
 from .database import engine, SessionLocal, Base
 from .models import Task
+from .config import APP_NAME, APP_VERSION
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="AI Automation System",
-    version="3.0.0"
+    title=APP_NAME,
+    version=APP_VERSION
 )
 
 class TaskStatus(str, Enum):
