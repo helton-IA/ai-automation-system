@@ -18,3 +18,7 @@ class AutomationTask(BaseModel):
 
 class TaskStatusUpdate(BaseModel):
     status: TaskStatus
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str

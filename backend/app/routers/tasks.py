@@ -5,6 +5,13 @@ from ..database import SessionLocal
 from ..models import Task
 from ..schemas import AutomationTask, TaskStatusUpdate
 
+from ..schemas import LoginRequest
+from ..security import (
+    create_access_token,
+    verify_password,
+    get_password_hash
+)
+
 router = APIRouter(
     prefix="/automation/tasks",
     tags=["Automation Tasks"]
@@ -140,4 +147,36 @@ def delete_task(task_id: int):
     return {
         "message": "Task deleted successfully",
         "task_id": task_id
+    }
+
+@router.post("/login")
+def login(credentials: LoginRequest):
+
+    fake_user = {
+        "username": "admin",
+        "hashed_password": get_password_hash("123456")
+    }
+
+    if credentials.username != fake_user["username"]:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials"
+        )
+
+    if not verify_password(
+        credentials.password,
+        fake_user["hashed_password"]
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials"
+        )
+
+    token = create_access_token(
+        {"sub": credentials.username}
+    )
+
+    return {
+        "access_token": token,
+        "token_type": "bearer"
     }
